@@ -7,6 +7,8 @@
 <p/>
 <img src="https://david-dm.org/rse/grunt-newer-explicit.png" alt=""/>
 
+[UPDATED TO SUPPORT FOLDER COMPARISON]
+
 Grunt Task for running tasks if source files are newer only.
 
 This mimics the behaviour of good old Unix build tool `make(1)` within
@@ -61,6 +63,10 @@ _Run this task with the `grunt newer` command._
 Task targets, files and options may be specified according to the Grunt
 [Configuring tasks](http://gruntjs.com/configuring-tasks) guide.
 
+## Warning
+
+Because we cannot detect "missing" files, a deleted build folder file, might not be picked up. If it is implicitly defined in the dest array, it will be picked up as missing.
+
 ## Usage Example
 
 ```js
@@ -73,7 +79,8 @@ module.exports = function (grunt) {
     grunt.initConfig({
         copy: {
             "foo": { src: "src/foo.txt", dest: "build/foo.txt" },
-            "bar": { src: "src/bar.txt", dest: "build/bar.txt" }
+            "bar": { src: "src/bar.txt", dest: "build/bar.txt" },
+            "multi": { expand: true, cwd: 'src/multi', src: "**/*", dest: "build/multi/" }
         },
         newer: {
             "foo": {
@@ -85,6 +92,11 @@ module.exports = function (grunt) {
                 src: [ "src/bar.txt" ],
                 dest: "build/bar.txt",
                 options: { tasks: [ "copy:bar" ] }
+            },
+            "multi": {
+                src: [ "src/multi/**/*.txt" ],
+                dest: [ "build/multi/**/*.txt", "build/multi/animals/*.txt" ],
+                options: { tasks: [ "copy:multi" ] }
             }
         },
         watch: {

@@ -20,7 +20,7 @@
 **  CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 **  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 **  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
+*/  
 
 /* global module:  false */
 module.exports = function (grunt) {
@@ -29,6 +29,7 @@ module.exports = function (grunt) {
     var path  = require("path");
     var fs    = require("fs");
     var chalk = require("chalk");
+    var glob  = require("glob");
 
     /*  define the Grunt task  */
     grunt.registerMultiTask("newer", "Run tasks if source files are newer only", function () {
@@ -54,18 +55,63 @@ module.exports = function (grunt) {
             return mtime;
         };
 
+
         /*  iterate over all src-dest file pairs...  */
         var newer = false;
         this.files.forEach(function (f) {
             /*  short-circuit processing  */
-            if (newer)
+            if (newer) {
                 return;
+            }
+
+            /* get newest file from all destinations */
+            var newestDestFile_mtime = 0;
+            var newestDestFile = "";
+            var destFileList = [];
+            if(typeof f.dest === 'string') {
+                destFileList = glob.sync(f.dest); 
+                if(destFileList.length < 1) {
+                    grunt.log.warn("No destination files matching \"" + chalk.red(f.dest) + "\" found.");
+                    newer = true;
+                    return; 
+                }
+            }  else {
+                f.dest.forEach(function(destFileGlob) {
+                    var fileList = glob.sync(destFileGlob); 
+                    if(fileList.length < 1) {
+                        grunt.log.warn("No destination files matching \"" + chalk.red(destFileGlob) + "\" found.");
+                        newer = true;
+                        return; 
+                    }
+                    destFileList = destFileList.concat(fileList); 
+                }); 
+            }
+
+            if(!newer) {
+                /* loop over file list **/
+                destFileList.forEach(function(destFile) { 
+                    /*  check for destination file  */
+                    if (destFile.match(/\/$/))
+                        destFile = path.join(destFile, path.basename(src));
+                    var dst_stat = statFile(destFile);
+
+                    /** if file exists update to newest stamp **/
+                    if (dst_stat !== null) {
+                        var destFile_mtime = mtimeOf(dst_stat);
+                        if(destFile_mtime > newestDestFile_mtime) {
+                            newestDestFile_mtime = destFile_mtime;
+                            newestDestFile = destFile;
+                        }
+                    }
+                });
+            }
 
             /*  iterate over all source files... */
             f.src.forEach(function (src) {
                 /*  short-circuit processing  */
-                if (newer)
+                if (newer) {
                     return;
+                }
 
                 /*  check for source file  */
                 var src_stat = statFile(src);
@@ -74,20 +120,8 @@ module.exports = function (grunt) {
                     return;
                 }
 
-                /*  check for destination file  */
-                var dst = f.dest;
-                if (dst.match(/\/$/))
-                    dst = path.join(dst, path.basename(src));
-                var dst_stat = statFile(dst);
-
-                /*  if destination file is (still) not existing or
-                    out-of-date we know that the source file is newer  */
-                if (dst_stat === null) {
-                    grunt.log.writeln("Destination file \"" + chalk.red(dst) + "\" not found.");
-                    newer = true;
-                }
-                else if (mtimeOf(src_stat) > mtimeOf(dst_stat)) {
-                    grunt.log.writeln("Destination file \"" + chalk.red(dst) + "\" out-of-date.");
+                else if (mtimeOf(src_stat) > newestDestFile_mtime) {
+                    grunt.log.writeln("Destination file \"" + chalk.red(newestDestFile) + "\" out-of-date.");
                     newer = true;
                 }
             });

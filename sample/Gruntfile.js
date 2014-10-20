@@ -9,7 +9,8 @@ module.exports = function (grunt) {
     grunt.initConfig({
         copy: {
             "foo": { src: "src/foo.txt", dest: "build/foo.txt" },
-            "bar": { src: "src/bar.txt", dest: "build/bar.txt" }
+            "bar": { src: "src/bar.txt", dest: "build/bar.txt" },
+            "multi": { expand: true, cwd: 'src/multi', src: "**/*", dest: "build/multi/" }
         },
         newer: {
             "foo": {
@@ -21,6 +22,11 @@ module.exports = function (grunt) {
                 src: [ "src/bar.txt" ],
                 dest: "build/bar.txt",
                 options: { tasks: [ "copy:bar" ] }
+            },
+            "multi": {
+                src: [ "src/multi/**/*.txt" ],
+                dest: [ "build/multi/**/*.txt", "build/multi/animals/*.txt" ],
+                options: { tasks: [ "copy:multi" ] }
             }
         },
         watch: {
