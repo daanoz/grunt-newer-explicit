@@ -1,7 +1,7 @@
 {
-  "name": "grunt-newer-explicit",
-  "homepage": "http://github.com/rse/grunt-newer-explicit",
-  "description": "Grunt Task for running tasks if source files are newer only",
+  "name": "grunt-newer-explicit-folders",
+  "homepage": "https://github.com/daanoz/grunt-newer-explicit",
+  "description": "Grunt Task for running tasks if source files or folders are newer only",
   "version": "0.9.4",
   "license": "MIT",
   "author": {
@@ -17,10 +17,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/rse/grunt-newer-explicit.git"
+    "url": "https://github.com/daanoz/grunt-newer-explicit.git"
   },
   "bugs": {
-    "url": "http://github.com/rse/grunt-newer-explicit/issues"
+    "url": "http://github.com/daanoz/grunt-newer-explicit/issues"
   },
   "main": "Gruntfile.js",
   "devDependencies": {
